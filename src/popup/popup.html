@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gloss · 网页翻译与 AI 助手</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup-shell">
+    <!-- Compact Header (Zero Truncation) -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9.5" />
+            <path d="M2.8 12h18.4" />
+            <path d="M12 2.5a13.5 13.5 0 0 1 0 19 13.5 13.5 0 0 1 0-19Z" />
+          </svg>
+        </span>
+        <div class="brand-text">
+          <h1>Gloss</h1>
+          <span class="brand-sub">翻译 · 对话 · 总结 · 写作</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button
+          type="button"
+          id="engineBadge"
+          class="engine-badge"
+          aria-expanded="false"
+          aria-controls="engineConfigCard"
+          title="点击展开或收起引擎与模型设置"
+        >
+          Google 免费
+        </button>
+        <button
+          type="button"
+          id="openSidebarBtn"
+          class="header-sidebar-btn"
+          title="打开 AI 侧边栏 / Chrome 原生 Side Panel (Alt+S)"
+        >
+          <span>🧩 侧边栏</span>
+        </button>
+        <button
+          type="button"
+          id="openOptionsBtn"
+          class="icon-btn"
+          title="打开设置页面"
+          aria-label="打开设置页面"
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.08a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.08a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Top Sider 4-Tab Navigation -->
+    <nav id="workspaceTabs" class="workspace-tabs" role="tablist" aria-label="Sider 工作区导航">
+      <button type="button" id="tabBtnTranslate" class="workspace-tab active" role="tab" aria-selected="true" aria-controls="paneTranslate" data-workspace-tab="translate">
+        🌐 翻译
+      </button>
+      <button type="button" id="tabBtnChat" class="workspace-tab" role="tab" aria-selected="false" aria-controls="paneChat" data-workspace-tab="chat">
+        💬 AI 对话
+      </button>
+      <button type="button" id="tabBtnSummary" class="workspace-tab" role="tab" aria-selected="false" aria-controls="paneSummary" data-workspace-tab="summary">
+        📄 总结
+      </button>
+      <button type="button" id="tabBtnWrite" class="workspace-tab" role="tab" aria-selected="false" aria-controls="paneWrite" data-workspace-tab="write">
+        ✍️ 写作
+      </button>
+    </nav>
+
+    <!-- Collapsible Engine & Loom Model Drawer (Shared Across All 4 Tabs) -->
+    <section id="engineConfigCard" class="card engine-card" aria-labelledby="engineCardTitle" hidden>
+      <div class="engine-row">
+        <label for="popupEngineSelect" id="engineCardTitle" class="control-label">翻译/AI 引擎</label>
+        <select id="popupEngineSelect" class="select-input select-compact" aria-label="选择翻译引擎">
+          <option value="google-free">Google 免费翻译</option>
+          <option value="mymemory">MyMemory 免费接口</option>
+          <option value="loom">Loom 本地网关 (127.0.0.1:4319)</option>
+          <option value="codex">OpenAI Codex 订阅 (ChatGPT Plus/Pro)</option>
+          <option value="openai">OpenAI / 兼容 LLM</option>
+        </select>
+      </div>
+
+      <div id="popupLoomRow" class="loom-quick-panel" hidden>
+        <div class="loom-select-stack">
+          <div class="loom-field-row">
+            <label for="popupLoomProvider" class="mini-label">供应商</label>
+            <select id="popupLoomProvider" class="select-input select-compact" aria-label="Loom 供应商"></select>
+          </div>
+          <div class="loom-field-row">
+            <label for="popupLoomModel" class="mini-label">模型</label>
+            <select id="popupLoomModel" class="select-input select-compact" aria-label="Loom 模型"></select>
+          </div>
+        </div>
+        <div class="loom-meta-row">
+          <span id="popupLoomHint" class="loom-hint">本地预设供应商与模型</span>
+          <div class="loom-meta-actions">
+            <button type="button" id="popupLoomRefreshBtn" class="text-btn" title="刷新 Loom 供应商与模型">刷新模型</button>
+            <button type="button" id="drawerOptionsBtn" class="text-btn" title="前往设置页配置 API Key">配置密钥</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="popupCodexRow" class="loom-quick-panel codex-quick-panel" hidden>
+        <div class="loom-select-stack">
+          <div class="loom-field-row">
+            <label for="popupCodexModel" class="mini-label">模型</label>
+            <select id="popupCodexModel" class="select-input select-compact" aria-label="Codex 订阅模型"></select>
+          </div>
+        </div>
+        <div class="loom-meta-row">
+          <span id="popupCodexHint" class="loom-hint">未导入凭证</span>
+          <div class="loom-meta-actions">
+            <button type="button" id="popupCodexImportBtn" class="text-btn" title="SidePanel 下可直接选择本地 auth.json，Popup 下跳转到设置页导入或登录">导入凭证 / 设置</button>
+          </div>
+        </div>
+        <input type="file" id="popupCodexFileInput" accept=".json,application/json" hidden />
+      </div>
+    </section>
+
+    <!-- Workspace Content -->
+    <main class="workspace-body">
+      <!-- TAB 1: Translate -->
+      <section id="paneTranslate" class="workspace-pane" role="tabpanel" aria-labelledby="tabBtnTranslate">
+        <!-- Compact Page Translation Control Card -->
+        <section id="pageCard" class="card page-card" aria-labelledby="pageCardTitle">
+          <div class="page-head-row">
+            <div class="page-head-left">
+              <h2 id="pageCardTitle">整页翻译</h2>
+              <span id="pageStatusBadge" class="status-pill status-idle">未翻译</span>
+            </div>
+            <span id="pageRestrictedBar" class="page-restricted-bar" hidden>
+              系统页不支持整页注入，可用文本翻译或 AI
+            </span>
+          </div>
+
+          <div id="pageNotice" class="inline-notice" hidden></div>
+
+          <div id="pageControlsBody" class="page-controls-body">
+            <div class="control-row">
+              <span class="control-label">目标语言</span>
+              <div id="pageTargetLangGroup" class="segmented-group segmented-3" role="radiogroup" aria-label="整页翻译目标语言">
+                <button type="button" class="seg-btn active" data-target-lang="zh-CN" aria-pressed="true">简体中文</button>
+                <button type="button" class="seg-btn" data-target-lang="zh-TW" aria-pressed="false">繁體中文</button>
+                <button type="button" class="seg-btn" data-target-lang="en" aria-pressed="false">English</button>
+              </div>
+            </div>
+            <div class="control-row">
+              <span class="control-label">显示模式</span>
+              <div id="displayModeGroup" class="segmented-group segmented-2" role="group" aria-label="显示模式">
+                <button type="button" class="seg-btn active" data-display-mode="replace" aria-pressed="true" title="类似 Chrome 内置翻译，保持原排版">原地替换</button>
+                <button type="button" class="seg-btn" data-display-mode="bilingual" aria-pressed="false">双语对照</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="page-actions-row">
+            <button type="button" id="togglePageTranslateBtn" class="primary-cta">
+              <svg class="cta-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m5 8 6 6" />
+                <path d="m4 14 6-6 2-3" />
+                <path d="M2 5h12" />
+                <path d="M7 2h1" />
+                <path d="m22 22-5-10-5 10" />
+                <path d="M14 18h6" />
+              </svg>
+              <span id="togglePageTranslateText">整页翻译</span>
+              <kbd class="shortcut-chip" title="快捷键">Alt+T</kbd>
+            </button>
+            <button type="button" id="summarizePageBtn" class="ai-quick-btn ai-quick-btn-accent" title="一键总结当前网页">
+              <span>📄 总结本页</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Instant Text Translator Card (Promoted Immediately on Restricted Pages) -->
+        <section class="card instant-card" aria-labelledby="instantCardTitle">
+          <div class="card-head">
+            <h2 id="instantCardTitle">即时文本翻译</h2>
+            <div class="head-meta">
+              <span id="charCount" class="char-counter">0 / 5000</span>
+              <button type="button" id="clearTextBtn" class="text-btn" hidden>清空</button>
+            </div>
+          </div>
+
+          <div class="lang-pair-stack">
+            <div class="control-row">
+              <label for="sourceLangSelect" class="control-label">源语言</label>
+              <select id="sourceLangSelect" class="select-input select-compact" aria-label="选择源语言"></select>
+            </div>
+            <div class="control-row">
+              <span class="control-label">目标语言</span>
+              <div id="targetLangGroup" class="segmented-group segmented-3" role="group" aria-label="目标语言">
+                <button type="button" class="seg-btn active" data-target-lang="zh-CN" aria-pressed="true">简体中文</button>
+                <button type="button" class="seg-btn" data-target-lang="zh-TW" aria-pressed="false">繁體中文</button>
+                <button type="button" class="seg-btn" data-target-lang="en" aria-pressed="false">English</button>
+              </div>
+            </div>
+          </div>
+
+          <textarea
+            id="quickInput"
+            class="text-input"
+            rows="3"
+            maxlength="5000"
+            placeholder="输入或粘贴任意语言文本，Ctrl/Cmd + Enter 翻译..."
+            aria-label="待翻译文本"
+          ></textarea>
+
+          <div class="instant-actions">
+            <span id="quickTargetLabel" class="target-hint">译为：简体中文</span>
+            <button type="button" id="quickTranslateBtn" class="translate-btn">
+              <span id="quickTranslateBtnText">翻译</span>
+            </button>
+          </div>
+
+          <div id="quickResultBox" class="result-box" hidden>
+            <div class="result-head">
+              <div class="result-badges">
+                <span id="detectedLangPill" class="detect-pill">自动检测</span>
+                <span id="resultEnginePill" class="mini-engine-pill">Google</span>
+              </div>
+              <div class="result-tools">
+                <button type="button" id="speakResultBtn" class="tool-btn" title="朗读译文">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                  </svg>
+                  <span id="speakResultText">朗读</span>
+                </button>
+                <button type="button" id="copyResultBtn" class="tool-btn" title="复制译文">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  <span id="copyResultText">复制</span>
+                </button>
+              </div>
+            </div>
+            <div id="quickResultText" class="result-text"></div>
+            <div id="quickErrorText" class="result-error" hidden></div>
+          </div>
+        </section>
+
+        <!-- Recent History Section -->
+        <section class="card history-card" aria-labelledby="historyToggleLabel">
+          <div class="history-header">
+            <button
+              type="button"
+              id="toggleHistoryBtn"
+              class="history-toggle"
+              aria-expanded="false"
+              aria-controls="historyBody"
+            >
+              <svg class="chevron-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+              <span id="historyToggleLabel">最近翻译记录</span>
+              <span id="historyCount" class="count-pill">0</span>
+            </button>
+            <button type="button" id="clearHistoryBtn" class="text-danger-btn" disabled>清空记录</button>
+          </div>
+
+          <div id="historyBody" class="history-body" hidden>
+            <div id="historyList" class="history-list"></div>
+            <div id="historyEmpty" class="history-empty">暂无翻译记录</div>
+          </div>
+        </section>
+      </section>
+
+      <!-- TAB 2: AI Chat (Always Available Even on Restricted Pages) -->
+      <section id="paneChat" class="workspace-pane workspace-pane-chat" role="tabpanel" aria-labelledby="tabBtnChat" hidden>
+        <div class="card ai-chat-card">
+          <div class="chat-top-bar">
+            <div class="chat-top-toggles">
+              <label class="chat-context-toggle">
+                <input type="checkbox" id="popupChatContextToggle" checked />
+                <span id="popupChatContextLabel">📄 关联当前网页</span>
+              </label>
+              <label class="chat-context-toggle">
+                <input type="checkbox" id="popupChatThinkingToggle" checked />
+                <span>🧠 深度思考</span>
+              </label>
+              <span id="popupChatPageImgBadge" class="chat-page-img-badge" hidden></span>
+            </div>
+            <div class="chat-top-actions">
+              <button type="button" id="popupChatHistoryBtn" class="text-btn" title="查询历史网页会话" aria-expanded="false">🕒 历史会话 <span id="popupChatHistoryCount" class="count-pill">0</span></button>
+              <button type="button" id="popupChatNewBtn" class="text-btn" title="开启新对话">➕ 新对话</button>
+              <button type="button" id="popupChatClearBtn" class="text-btn">清空对话</button>
+            </div>
+          </div>
+
+          <div id="popupChatSessionBanner" class="chat-session-banner" hidden>
+            <span id="popupChatSessionBannerText" class="chat-session-banner-text"></span>
+            <a id="popupChatSessionOpenLink" class="chat-session-link" target="_blank" rel="noopener noreferrer" hidden>↗ 原网页</a>
+            <button type="button" id="popupChatSessionExitBtn" class="chat-session-exit-btn">新对话</button>
+          </div>
+
+          <div id="popupChatHistoryPanel" class="chat-history-panel" hidden>
+            <div class="chat-history-toolbar">
+              <input
+                type="search"
+                id="popupChatHistorySearch"
+                class="chat-history-search"
+                placeholder="搜索历史网页标题、域名或对话内容..."
+                aria-label="搜索历史网页会话"
+              />
+              <button type="button" id="popupChatHistoryClearAllBtn" class="text-danger-btn" disabled>清空历史</button>
+            </div>
+            <div id="popupChatHistoryList" class="chat-history-list"></div>
+            <div id="popupChatHistoryEmpty" class="chat-history-empty">暂无历史网页会话</div>
+          </div>
+
+          <div id="popupChatQuoteWrap" class="chat-quote-box" hidden>
+            <span class="chat-quote-tag">引用</span>
+            <span id="popupChatQuoteText" class="chat-quote-text"></span>
+            <button type="button" id="popupChatQuoteClearBtn" class="chat-quote-clear" title="移除引用">×</button>
+          </div>
+
+          <div id="popupChatChips" class="chat-chips-row">
+            <button type="button" class="chat-chip" data-chat-task="summarize_page">📝 总结本页</button>
+            <button type="button" class="chat-chip" data-chat-task="key_takeaways">💡 核心要点</button>
+            <button type="button" class="chat-chip" data-chat-task="page_qa">❓ 生成问答</button>
+            <button type="button" class="chat-chip" data-chat-task="explain">🔍 解释概念</button>
+          </div>
+
+          <div id="popupChatList" class="popup-chat-list"></div>
+
+          <div id="popupChatImageStrip" class="chat-image-strip" hidden></div>
+          <input type="file" id="popupChatImageInput" accept="image/*" multiple hidden />
+
+          <div class="chat-composer">
+            <button
+              type="button"
+              id="popupChatImageBtn"
+              class="chat-image-btn"
+              title="上传图片（支持 PNG/JPG/WebP，也可直接 Ctrl/Cmd+V 粘贴截图；侧边栏内选图不会自动关闭窗口）"
+            >🖼️ 传图</button>
+            <textarea
+              id="popupChatInput"
+              class="chat-input"
+              rows="2"
+              placeholder="向 AI 提问或 Ctrl/Cmd+V 粘贴截图，Enter 发送..."
+              aria-label="AI 对话输入框"
+            ></textarea>
+            <button type="button" id="popupChatSendBtn" class="chat-send-btn">发送</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: Summary -->
+      <section id="paneSummary" class="workspace-pane" role="tabpanel" aria-labelledby="tabBtnSummary" hidden>
+        <section class="card summary-card">
+          <div class="summary-meta-bar">
+            <div class="summary-meta-text">
+              <div id="popupSummaryPageTitle" class="summary-page-title">当前网页</div>
+              <div id="popupSummarySourceMeta" class="summary-source-meta">准备提取当前页面正文</div>
+            </div>
+            <button type="button" id="popupSummaryRefreshBtn" class="tool-btn">↻ 刷新</button>
+          </div>
+
+          <div class="summary-actions-grid">
+            <button type="button" id="popupSummaryRunBtn" class="summary-action-btn summary-action-primary" data-summary-task="summarize_page">
+              ⚡ 一键总结当前网页
+            </button>
+            <button type="button" id="popupSummaryTakeawaysBtn" class="summary-action-btn" data-summary-task="key_takeaways">
+              📌 提炼核心要点
+            </button>
+            <button type="button" id="popupSummaryQaBtn" class="summary-action-btn" data-summary-task="page_qa">
+              ❓ 生成关键问答
+            </button>
+          </div>
+
+          <div class="summary-custom-wrap">
+            <label for="popupSummaryCustomInput" class="mini-label">自定义正文（受限页面或任意粘贴文本时优先使用）</label>
+            <textarea
+              id="popupSummaryCustomInput"
+              class="text-input summary-custom-input"
+              rows="3"
+              placeholder="在受限系统页或需要分析任意文章时，可在此粘贴文本..."
+              aria-label="自定义总结正文"
+            ></textarea>
+          </div>
+
+          <div id="popupSummaryResult" class="ai-result-panel">
+            点击上方按钮，AI 将生成结构化摘要、核心要点或关键问答。
+          </div>
+
+          <div class="pane-footer-actions">
+            <button type="button" id="popupSummaryCopyBtn" class="tool-btn" disabled>复制摘要</button>
+            <button type="button" id="popupSummaryFollowupBtn" class="followup-btn" disabled>💬 基于摘要继续追问</button>
+          </div>
+        </section>
+      </section>
+
+      <!-- TAB 4: Writing Assistant -->
+      <section id="paneWrite" class="workspace-pane" role="tabpanel" aria-labelledby="tabBtnWrite" hidden>
+        <section class="card write-card">
+          <div class="card-head">
+            <h2>✍️ AI 写作与改写助手</h2>
+            <button type="button" id="popupWriteClearBtn" class="text-btn" hidden>清空</button>
+          </div>
+
+          <textarea
+            id="popupWriteInput"
+            class="text-input"
+            rows="4"
+            placeholder="输入或粘贴需要润色、精简、扩写、纠错或翻译的文本..."
+            aria-label="AI 写作原文本"
+          ></textarea>
+
+          <div id="popupWriteActions" class="write-actions-grid">
+            <button type="button" class="write-action-btn" data-write-task="polish">✨ 专业润色</button>
+            <button type="button" class="write-action-btn" data-write-task="shorten">📏 精简缩写</button>
+            <button type="button" class="write-action-btn" data-write-task="expand">🚀 扩写丰富</button>
+            <button type="button" class="write-action-btn" data-write-task="grammar">🔧 语法纠错</button>
+            <button type="button" class="write-action-btn" data-write-task="translate_en">🇺🇸 译为英文</button>
+            <button type="button" class="write-action-btn" data-write-task="translate_zh">🇨🇳 译为中文</button>
+          </div>
+
+          <div id="popupWriteResult" class="ai-result-panel">
+            选择上方加工方式，AI 将立即生成优化后的文本。
+          </div>
+
+          <div class="pane-footer-actions">
+            <span id="popupWriteEngineMeta" class="mini-engine-pill"></span>
+            <button type="button" id="popupWriteCopyBtn" class="followup-btn" disabled>复制结果</button>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

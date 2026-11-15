@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gloss 网页翻译 · Interactive Multilingual Demo</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --surface-alt: #f0f4fa;
+      --border: #dfe5f0;
+      --text: #162033;
+      --text-muted: #55637a;
+      --accent: #2563eb;
+      --accent-soft: #e8f0fe;
+      --accent-hover: #1d4ed8;
+      --success: #0f9d58;
+      --warning: #b45309;
+      --code-bg: #111827;
+      --code-text: #e5e7eb;
+      --shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
+      --radius: 14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1120;
+        --surface: #131c31;
+        --surface-alt: #1b2640;
+        --border: #263453;
+        --text: #e6edf8;
+        --text-muted: #9aa9c4;
+        --accent: #60a5fa;
+        --accent-soft: rgba(96, 165, 250, 0.16);
+        --accent-hover: #3b82f6;
+        --success: #34d399;
+        --warning: #fbbf24;
+        --code-bg: #090e1a;
+        --code-text: #e2e8f0;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans JP", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.72;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+    }
+
+    /* Sticky Demo Toolbar (protected from page translation) */
+    .demo-toolbar {
+      position: sticky;
+      top: 12px;
+      z-index: 9000;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 18px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .brand-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      display: inline-block;
+    }
+
+    .env-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid transparent;
+    }
+
+    .env-badge.is-warn {
+      background: rgba(245, 158, 11, 0.14);
+      color: var(--warning);
+    }
+
+    .env-badge.is-ready {
+      background: rgba(16, 185, 129, 0.14);
+      color: var(--success);
+    }
+
+    .toolbar-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .seg-group {
+      display: inline-flex;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .seg-btn {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 11px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .seg-btn:hover {
+      color: var(--text);
+    }
+
+    .seg-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .action-btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .action-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .action-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .action-btn.primary:hover {
+      background: var(--accent-hover);
+      color: #ffffff;
+    }
+
+    .action-btn.is-translated {
+      background: #0f9d58;
+      border-color: #0f9d58;
+      color: #ffffff;
+    }
+
+    .toolbar-tips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px dashed var(--border);
+      padding-top: 8px;
+    }
+
+    .toolbar-tips kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 5px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .alert-banner {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: var(--text);
+      font-size: 13.5px;
+    }
+
+    .alert-banner.visible {
+      display: block;
+    }
+
+    /* Hero section */
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 30px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      line-height: 1.3;
+    }
+
+    .hero p {
+      margin: 0 0 10px;
+      color: var(--text-muted);
+      font-size: 15.5px;
+    }
+
+    .hero p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Article Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 26px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .lang-pill {
+      align-self: flex-start;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .card h2 {
+      margin: 2px 0 4px;
+      font-size: 19px;
+      line-height: 1.38;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 14.8px;
+      color: var(--text);
+    }
+
+    .card blockquote {
+      margin: 8px 0 0;
+      padding: 10px 14px;
+      border-left: 3px solid var(--accent);
+      background: var(--surface-alt);
+      border-radius: 0 8px 8px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Technical / Protected / Structured section */
+    .full-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 26px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .full-section h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .protected-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .protected-box {
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: var(--surface-alt);
+    }
+
+    .protected-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    pre {
+      margin: 14px 0;
+      padding: 16px 18px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.55;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--surface-alt);
+      font-weight: 700;
+    }
+
+    figure {
+      margin: 18px 0 0;
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+    }
+
+    figcaption {
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .selection-sandbox {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .selection-phrase {
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      user-select: text;
+    }
+
+    /* Structured Layout / Timeline Comparison Demo */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 16px;
+      align-items: stretch;
+    }
+
+    .compare-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .compare-col-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .compare-col pre {
+      margin: 0;
+      flex: 1;
+    }
+
+    .timeline-preview-card {
+      flex: 1;
+      padding: 20px 22px;
+      border-radius: 12px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .timeline-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      align-self: flex-start;
+      padding: 4px 12px;
+      border-radius: 6px;
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      padding-left: 4px;
+    }
+
+    .timeline-row {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      font-size: 14.5px;
+    }
+
+    .tl-dot {
+      width: 16px;
+      flex: 0 0 16px;
+      text-align: center;
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    .tl-dot-pending {
+      color: var(--text-muted);
+    }
+
+    .tl-date {
+      width: 72px;
+      flex: 0 0 72px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    .tl-text {
+      flex: 1;
+      color: var(--text-muted);
+    }
+
+    /* Long-form Article & Writing Sandbox for Sider AI Sidebar */
+    .longform-article h3 {
+      margin: 18px 0 6px;
+      font-size: 16.5px;
+      color: var(--text);
+    }
+
+    .longform-article p {
+      margin: 0 0 12px;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .sider-feature-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin: 14px 0 18px;
+    }
+
+    .sider-feature-chip {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      font-size: 13.5px;
+    }
+
+    .sider-feature-chip strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    .write-sandbox-box {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+    }
+
+    .write-sandbox-box label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+
+    .write-textarea {
+      width: 100%;
+      min-height: 84px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.55;
+      resize: vertical;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <!-- Interactive Demo Toolbar (marked wt-ignore / notranslate so UI controls stay intact during page translation) -->
+    <header class="demo-toolbar wt-ignore notranslate" translate="no" aria-label="Demo Control Bar">
+      <div class="toolbar-row">
+        <div class="brand">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span>Gloss 网页翻译 · Demo</span>
+          <span id="demo-env-badge" class="env-badge">Initializing…</span>
+        </div>
+
+        <div class="toolbar-controls">
+          <!-- Target Language Segmented Selector -->
+          <div class="seg-group" role="group" aria-label="Target Language">
+            <button type="button" class="seg-btn active" data-target="zh-CN">简体中文</button>
+            <button type="button" class="seg-btn" data-target="zh-TW">繁體中文</button>
+            <button type="button" class="seg-btn" data-target="en">English</button>
+          </div>
+
+          <!-- Display Mode Switch (Chrome-style In-Place Replace first & default) -->
+          <div class="seg-group" role="group" aria-label="Display Mode">
+            <button type="button" class="seg-btn active" data-mode="replace">原地替换</button>
+            <button type="button" class="seg-btn" data-mode="bilingual">双语对照</button>
+          </div>
+
+          <!-- Primary Actions -->
+          <button type="button" id="demo-toggle-btn" class="action-btn primary">整页翻译</button>
+          <button type="button" id="demo-restore-btn" class="action-btn">恢复原文</button>
+          <button type="button" id="demo-selection-btn" class="action-btn">测试划词弹窗</button>
+          <button type="button" id="demo-sidebar-btn" class="action-btn">💬 AI 侧边栏 (Alt+S)</button>
+          <button type="button" id="demo-summarize-btn" class="action-btn">📄 AI 总结本页</button>
+        </div>
+      </div>
+
+      <div class="toolbar-tips">
+        <span><kbd>Alt</kbd> + 悬停任意段落：单段即时翻译/还原</span>
+        <span><kbd>Alt</kbd> + <kbd>S</kbd>：打开/关闭 Sider AI 侧边栏（对话 · 总结 · 润色）</span>
+        <span>鼠标选中任意外文句子：划词翻译 &amp; AI 解释/总结/润色</span>
+        <span>右下角悬浮球：切换语言、双语模式与 AI 助手</span>
+        <span id="demo-status-text">状态：原文未翻译</span>
+      </div>
+    </header>
+
+    <div id="demo-file-warning" class="alert-banner wt-ignore notranslate" translate="no"></div>
+
+    <!-- Hero Article (English) -->
+    <section class="hero" lang="en">
+      <span class="hero-tag wt-ignore notranslate" translate="no">Interactive Test Bed · 8 Languages</span>
+      <h1>Seamless Web Translation Across Any Language</h1>
+      <p>
+        Modern research, software documentation, and global news are published simultaneously in dozens of languages.
+        A thoughtful browser translator preserves document structure, typography, and inline formatting while delivering fluent bilingual or full-replacement reading views.
+      </p>
+      <p>
+        Use the toolbar above or the floating quick-action ball to translate this entire page into Simplified Chinese, Traditional Chinese, or English, or hold Alt and hover over any single paragraph.
+      </p>
+    </section>
+
+    <!-- Multilingual Articles Grid -->
+    <main class="grid">
+      <!-- 1. English -->
+      <section class="card" lang="en">
+        <span class="lang-pill wt-ignore notranslate" translate="no">English (EN)</span>
+        <h2>Browser Architecture and Viewport-First Rendering</h2>
+        <p>
+          Translating long articles efficiently requires observing which paragraphs are currently visible in the viewport.
+          By batching nearby text nodes together and caching repeated phrases locally, extensions avoid unnecessary network latency while keeping scrolling silky smooth.
+        </p>
+        <blockquote>
+          "Language should never be a barrier to discovering open knowledge, technical documentation, or diverse cultural perspectives."
+        </blockquote>
+      </section>
+
+      <!-- 2. Japanese -->
+      <section class="card" lang="ja">
+        <span class="lang-pill wt-ignore notranslate" translate="no">日本語 (JA)</span>
+        <h2>多言語ウェブタイポグラフィと読みやすさ</h2>
+        <p>
+          日本語や中国語、欧文が混在するウェブページでは、原文と訳文の視覚的なバランスを保つことが非常に重要です。
+          行間や余白を適切に設計することで、対訳表示でも元のレイアウトを崩さずに快適に読み進めることができます。
+        </p>
+        <p>
+          また、コードブロックや専門用語のタグを自動的に保護することで、技術記事の正確さを損なわずに翻訳できます。
+        </p>
+      </section>
+
+      <!-- 3. Korean -->
+      <section class="card" lang="ko">
+        <span class="lang-pill wt-ignore notranslate" translate="no">한국어 (KO)</span>
+        <h2>웹 표준과 실시간 번역 기술의 발전</h2>
+        <p>
+          현대적인 웹 확장 프로그램은 단순한 단어 치환을 넘어 문맥을 이해하고 자연스러운 문장을 제공합니다.
+          사용자가 원하는 단락만 선택하여 즉시 번역하거나 전체 페이지를 이중 언어로 비교하며 읽을 수 있는 기능은 학습과 업무 효율을 크게 높여 줍니다.
+        </p>
+        <p>
+          마우스로 텍스트를 드래그해 바로 뜻을 확인하고 음성으로 들어보는 기능 역시 매우 유용합니다.
+        </p>
+      </section>
+
+      <!-- 4. French -->
+      <section class="card" lang="fr">
+        <span class="lang-pill wt-ignore notranslate" translate="no">Français (FR)</span>
+        <h2>L'interopérabilité linguistique sur le web ouvert</h2>
+        <p>
+          Les communautés open source réunissent des développeurs et des chercheurs de tous les continents.
+          Pouvoir consulter instantanément une discussion technique ou un article scientifique dans sa propre langue favorise une collaboration plus rapide et plus inclusive.
+        </p>
+        <p>
+          Une traduction respectueuse de la structure HTML garantit que les liens, citations et tableaux restent parfaitement exploitables.
+        </p>
+      </section>
+
+      <!-- 5. German -->
+      <section class="card" lang="de">
+        <span class="lang-pill wt-ignore notranslate" translate="no">Deutsch (DE)</span>
+        <h2>Modulare Browser-Erweiterungen und Datenschutz</h2>
+        <p>
+          Moderne Browser-Erweiterungen basieren auf Manifest V3 und trennen Benutzeroberfläche, Inhaltsanalyse und Hintergrunddienste klar voneinander.
+          Anwender können selbst entscheiden, ob sie kostenlose Übersetzungsdienste nutzen oder einen eigenen API-Endpunkt für vertrauliche Texte konfigurieren.
+        </p>
+        <p>
+          Durch Ausschlusslisten für bestimmte Domains bleibt die Kontrolle jederzeit beim Nutzer.
+        </p>
+      </section>
+
+      <!-- 6. Spanish -->
+      <section class="card" lang="es">
+        <span class="lang-pill wt-ignore notranslate" translate="no">Español (ES)</span>
+        <h2>El conocimiento compartido sin fronteras idiomáticas</h2>
+        <p>
+          Desde guías prácticas de programación hasta ensayos de divulgación científica, millones de páginas web valiosas esperan ser descubiertas más allá de nuestro idioma materno.
+          La traducción bilingüe permite comparar la redacción original con su equivalente traducido en tiempo real.
+        </p>
+        <p>
+          Esta experiencia resulta ideal tanto para profesionales ocupados como para estudiantes de idiomas.
+        </p>
+      </section>
+
+      <!-- 7. Simplified Chinese -->
+      <section class="card" lang="zh-CN">
+        <span class="lang-pill wt-ignore notranslate" translate="no">简体中文 (zh-CN)</span>
+        <h2>跨语言阅读与双语对照体验</h2>
+        <p>
+          在阅读技术博客、开源文档或国际新闻时，双语对照模式能够让读者同时参照原文术语与译文语义，避免关键概念在转换过程中丢失。
+          点击上方目标语言按钮切换为「繁體中文」或「English」，即可测试简体中文段落的反向与繁简转换效果。
+        </p>
+        <p>
+          此外，系统会自动跳过代码块和带有保护标记的元素，确保页面结构与程序语法始终保持原样。
+        </p>
+      </section>
+
+      <!-- 8. Traditional Chinese -->
+      <section class="card" lang="zh-TW">
+        <span class="lang-pill wt-ignore notranslate" translate="no">繁體中文 (zh-TW)</span>
+        <h2>繁簡轉換與技術文獻的精準呈現</h2>
+        <p>
+          無論來源網頁採用英文、日文、韓文、歐洲語系或簡體中文，良好的翻譯工具都應該能流暢輸出符合閱讀習慣的繁體中文、簡體中文或英文。
+          您可以嘗試在僅看譯文與雙語對照模式之間快速切換，觀察頁面排版與還原原文的穩定度。
+        </p>
+        <p>
+          搭配 Alt 鍵懸停單段翻譯與劃詞彈窗功能，日常瀏覽外文資料會變得更加輕鬆自然。
+        </p>
+      </section>
+    </main>
+
+    <!-- Structured Layout / Timeline Demo (Tests In-Place TextNode Replacement) -->
+    <section class="full-section" id="structured-timeline-demo" lang="en">
+      <h2>Structured Layout / Timeline Demo (In-Place TextNode Replacement)</h2>
+      <p>
+        In default Chrome-style <strong>原地替换 (replace)</strong> mode, multi-column flex/grid timelines, inline status badges, and indicator icons translate cleanly in-place without inserting wrapper elements or breaking alignment, while raw code blocks stay untouched.
+      </p>
+
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-col-title">you write</div>
+          <pre><code>&lt;GraphTimeline title="SHIPPED"&gt;
+  - **Mar 12**: CLI copies the files
+  - **Mar 18**: Docs, live previews
+  - **Apr 02**: Registry listed
+&lt;/GraphTimeline&gt;</code></pre>
+        </div>
+
+        <div class="compare-col">
+          <div class="compare-col-title">readers see</div>
+          <div class="timeline-preview-card">
+            <div class="timeline-badge">
+              <span>[</span>
+              <span>SHIPPED</span>
+              <span>]</span>
+            </div>
+            <div class="timeline-list">
+              <div class="timeline-row">
+                <span class="tl-dot tl-dot-done">●</span>
+                <span class="tl-date">Mar 12</span>
+                <span class="tl-text">CLI copies the files</span>
+              </div>
+              <div class="timeline-row">
+                <span class="tl-dot tl-dot-done">●</span>
+                <span class="tl-date">Mar 18</span>
+                <span class="tl-text">Docs, live previews</span>
+              </div>
+              <div class="timeline-row">
+                <span class="tl-dot tl-dot-pending">○</span>
+                <span class="tl-date">Apr 02</span>
+                <span class="tl-text">Registry listed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Code Blocks, Protected Elements & Structured HTML Section -->
+    <section class="full-section">
+      <h2>Technical Elements, Protected Nodes &amp; Structured Content</h2>
+      <p>
+        Code snippets inside <code>&lt;pre&gt;&lt;code&gt;</code>, elements marked with <code>.notranslate</code>, and elements with <code>translate="no"</code> must remain untouched during full-page translation.
+      </p>
+
+      <pre><code>// Code block: must NOT be translated during full-page translation
+async function translateCurrentPage(targetLang = 'zh-CN') {
+  const response = await chrome.runtime.sendMessage({
+    type: 'PAGE_TRANSLATE_START',
+    payload: { sourceLang: 'auto', targetLang, displayMode: 'bilingual' }
+  });
+  return response?.status;
+}</code></pre>
+
+      <div class="protected-row">
+        <div class="protected-box notranslate">
+          <div class="protected-label wt-ignore">Class: .notranslate (Protected)</div>
+          <p>
+            Gloss MV3 Engine · Build v1.0.0 · Endpoint: https://api.openai.com/v1/chat/completions
+          </p>
+        </div>
+
+        <div class="protected-box" translate="no">
+          <div class="protected-label wt-ignore">Attribute: translate="no" (Protected)</div>
+          <p>
+            Storage Keys: wt_settings / wt_history · Command Shortcut: Alt+T · License: MIT
+          </p>
+        </div>
+      </div>
+
+      <ul>
+        <li>Supports automatic source language detection across global scripts.</li>
+        <li>Switches cleanly between bilingual side-by-side/stacked mode and replacement mode.</li>
+        <li>Restores the original DOM hierarchy completely without leftover artifacts.</li>
+      </ul>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Description</th>
+            <th>Shortcut / Trigger</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Full-Page Translation</td>
+            <td>Translates visible viewport paragraphs first using batch requests.</td>
+            <td>Toolbar / Popup / Alt+T</td>
+          </tr>
+          <tr>
+            <td>Single-Paragraph Hover</td>
+            <td>Quickly translates or restores one paragraph under the cursor.</td>
+            <td>Hold Alt + Hover</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <figure>
+        <figcaption>
+          Figure 1: Structured elements such as table cells, list items, blockquotes, and figure captions should all translate cleanly and restore cleanly.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Sider AI Reading, Summary & Writing Long-form Test Article -->
+    <article class="full-section longform-article" id="sider-ai-showcase" lang="en">
+      <h2>Sider AI Reading Assistant &amp; Long-Form Essay</h2>
+      <p>
+        Press <strong>Alt + S</strong>, open the floating ball menu, or click <strong>💬 AI 侧边栏 (Alt+S)</strong> / <strong>📄 AI 总结本页</strong> in the toolbar to test Sider-style contextual AI chat, one-click page summarization, inline Loom model switching (such as <code>GLM-4.5 Air</code>, <code>GLM-5 Turbo</code>, <code>Kimi K3 256K</code>, and <code>Kimi K3.1 Pro</code>), and writing refinement directly on this page.
+      </p>
+
+      <div class="sider-feature-strip wt-ignore notranslate" translate="no">
+        <div class="sider-feature-chip">
+          <strong>💬 网页上下文对话 (Alt+S)</strong>
+          关联当前网页正文、引用划词片段，支持多轮追问与 Markdown 答案一键复制。
+        </div>
+        <div class="sider-feature-chip">
+          <strong>📄 一键网页总结 &amp; 问答</strong>
+          自动提炼摘要 (<code>summarize_page</code>)、核心要点 (<code>key_takeaways</code>) 与关键问答 (<code>page_qa</code>)。
+        </div>
+        <div class="sider-feature-chip">
+          <strong>✨ 划词 AI 工具条</strong>
+          划选下方任意句子即可触发 <code>✨ 解释</code> / <code>📝 总结</code> / <code>✒️ 润色</code> / <code>💬 追问</code>。
+        </div>
+        <div class="sider-feature-chip">
+          <strong>✍️ 写作润色与页面回填</strong>
+          支持专业润色、精简、扩写、语法纠错、中英互译并一键填回网页输入框。
+        </div>
+      </div>
+
+      <h3>1. Why Local-First AI Gateways Matter for Browser Assistants</h3>
+      <p>
+        Browser-based reading assistants frequently struggle with fragmented API keys, high latency, and inconsistent prompt engineering across dozens of model providers. Routing page translation and contextual summarization through a unified local gateway on loopback port 4319 decouples the extension UI from provider-specific schemas while keeping user credentials strictly under local host control. When a user switches seamlessly from GLM-4.5 Air for rapid skimming to Kimi K3.1 Pro for deep architectural analysis, the sidebar updates its active routing configuration without discarding conversation history.
+      </p>
+      <p>
+        Furthermore, disabling verbose chain-of-thought reasoning on latency-sensitive translation batches reduces turnaround time from over sixty seconds to roughly three seconds per viewport batch. Duplicate UI labels and navigation badges are deduplicated within each batch before dispatch, ensuring that repeated status words like timestamps or release tags only incur a single upstream inference call while still updating every visible instance in lockstep.
+      </p>
+
+      <h3>2. Designing Non-Destructive DOM Reading and Context Extraction</h3>
+      <p>
+        A resilient reading companion must respect both the visual layout of modern web applications and the semantic boundaries of technical documents. In replacement mode, directly mutating leaf text nodes preserves responsive CSS grid columns, inline SVG icons, and tightly aligned timeline rows without injecting wrapper spans that would break flex widths or table borders. Simultaneously, dynamic observers track lazy-loaded dashboard widgets and expandable accordion panels so newly mounted analytics cards translate automatically without forcing the reader to re-trigger full-page translation.
+      </p>
+      <p>
+        When users invoke page summarization or contextual question answering, structured content extraction gathers document headings alongside main article paragraphs while pruning navigation menus, decorative scripts, and raw code blocks. Combining clean prose extraction with selective citation lets readers move effortlessly from scanning bilingual documentation to synthesizing actionable takeaways, drafting follow-up emails, and refining technical notes directly within the browser viewport.
+      </p>
+    </article>
+
+    <!-- Selection Translation & Writing Assistant Test Area -->
+    <section class="full-section" id="writing-sandbox">
+      <h2>Selection Popover &amp; Writing Backfill Sandbox</h2>
+      <p>
+        Highlight any phrase below with your mouse to trigger the floating selection button, translation tabs, and Sider AI toolbar (<strong>✨ 解释</strong> · <strong>📝 总结</strong> · <strong>✒️ 润色</strong> · <strong>💬 追问</strong>), or click <strong>测试划词弹窗</strong> in the toolbar.
+      </p>
+      <div class="selection-sandbox">
+        <span class="selection-phrase" id="sample-phrase-en">Artificial intelligence accelerates scientific discovery.</span>
+        <span class="selection-phrase">Local-first LLM gateways combine low-latency streaming with unified multi-provider routing.</span>
+        <span class="selection-phrase">おはようございます、今日も素晴らしい一日を！</span>
+        <span class="selection-phrase">C'est une excellente démonstration de traduction.</span>
+      </div>
+
+      <div class="write-sandbox-box wt-ignore notranslate" translate="no">
+        <label for="demo-write-target">
+          ✍️ 写作助手回填测试框（点击聚焦后，在侧边栏「✍️ 写作润色」Tab 处理草稿并点击「📥 填入页面输入框」）：
+        </label>
+        <textarea id="demo-write-target" class="write-textarea">Hi team, i want ask if we can ship the new browser extension update tomorrow morning. There is still one minor ui alignment issue to verify before launch, please let me know your thoughts.</textarea>
+      </div>
+    </section>
+  </div>
+
+  <!-- Smart Standalone Polyfill + Extension Detection Bridge -->
+  <script type="module">
+    const envBadge = document.getElementById('demo-env-badge');
+    const statusText = document.getElementById('demo-status-text');
+    const fileWarning = document.getElementById('demo-file-warning');
+    const toggleBtn = document.getElementById('demo-toggle-btn');
+    const restoreBtn = document.getElementById('demo-restore-btn');
+    const selectionBtn = document.getElementById('demo-selection-btn');
+    const sidebarBtn = document.getElementById('demo-sidebar-btn');
+    const summarizeBtn = document.getElementById('demo-summarize-btn');
+    const targetBtns = Array.from(document.querySelectorAll('[data-target]'));
+    const modeBtns = Array.from(document.querySelectorAll('[data-mode]'));
+
+    const state = {
+      targetLang: 'zh-CN',
+      displayMode: 'replace',
+      isTranslated: false,
+      mode: 'detecting'
+    };
+
+    function setBadge(text, variant = '') {
+      envBadge.textContent = text;
+      envBadge.className = 'env-badge' + (variant ? ` ${variant}` : '');
+    }
+
+    function updateToolbarUI(status) {
+      if (status) {
+        if (typeof status.isTranslated === 'boolean') state.isTranslated = status.isTranslated;
+        if (status.targetLang) state.targetLang = status.targetLang;
+        if (status.displayMode) state.displayMode = status.displayMode;
+      }
+
+      targetBtns.forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.target === state.targetLang);
+      });
+      modeBtns.forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.mode === state.displayMode);
+      });
+
+      toggleBtn.textContent = state.isTranslated ? '已翻译 (点击切换/还原)' : '整页翻译';
+      toggleBtn.classList.toggle('is-translated', state.isTranslated);
+
+      const countPart = status && typeof status.translatedCount === 'number'
+        ? ` · 已译 ${status.translatedCount} 段`
+        : '';
+      const modeLabel = state.displayMode === 'bilingual' ? '双语对照' : '原地替换';
+      statusText.textContent = state.isTranslated
+        ? `状态：已翻译 (${state.targetLang} · ${modeLabel}${countPart})`
+        : `状态：原文未翻译 (目标 ${state.targetLang} · ${modeLabel})`;
+    }
+
+    function loadStylesheet(href) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`link[data-wt-demo="${href}"]`)) {
+          resolve();
+          return;
+        }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.dataset.wtDemo = href;
+        link.onload = () => resolve();
+        link.onerror = () => reject(new Error(`Failed to load CSS: ${href}`));
+        document.head.appendChild(link);
+      });
+    }
+
+    function loadClassicScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = false;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+        document.body.appendChild(script);
+      });
+    }
+
+    // Create a localStorage-backed chrome.storage polyfill area (with in-memory fallback)
+    function createStorageArea(areaName, notifyChanged) {
+      const prefix = `wt_demo_${areaName}:`;
+      const memFallback = new Map();
+
+      function safeGetItem(fullKey) {
+        try {
+          return localStorage.getItem(fullKey);
+        } catch {
+          return memFallback.has(fullKey) ? memFallback.get(fullKey) : null;
+        }
+      }
+
+      function safeSetItem(fullKey, val) {
+        memFallback.set(fullKey, val);
+        try {
+          localStorage.setItem(fullKey, val);
+        } catch {
+          // Ignore storage quota/security errors in restricted frames
+        }
+      }
+
+      function safeRemoveItem(fullKey) {
+        memFallback.delete(fullKey);
+        try {
+          localStorage.removeItem(fullKey);
+        } catch {
+          // Ignore
+        }
+      }
+
+      function readAll() {
+        const out = {};
+        try {
+          for (let i = 0; i < localStorage.length; i += 1) {
+            const fullKey = localStorage.key(i);
+            if (fullKey && fullKey.startsWith(prefix)) {
+              const key = fullKey.slice(prefix.length);
+              const raw = localStorage.getItem(fullKey);
+              try {
+                out[key] = JSON.parse(raw);
+              } catch {
+                out[key] = raw;
+              }
+            }
+          }
+          return out;
+        } catch {
+          for (const [fullKey, raw] of memFallback.entries()) {
+            if (fullKey.startsWith(prefix)) {
+              try {
+                out[fullKey.slice(prefix.length)] = JSON.parse(raw);
+              } catch {
+                out[fullKey.slice(prefix.length)] = raw;
+              }
+            }
+          }
+          return out;
+        }
+      }
+
+      function readKey(key) {
+        const raw = safeGetItem(prefix + key);
+        if (raw === null) return undefined;
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return raw;
+        }
+      }
+
+      return {
+        get(keys, callback) {
+          const result = {};
+          if (keys === null || keys === undefined) {
+            Object.assign(result, readAll());
+          } else if (typeof keys === 'string') {
+            const val = readKey(keys);
+            if (val !== undefined) result[keys] = val;
+          } else if (Array.isArray(keys)) {
+            for (const k of keys) {
+              const val = readKey(k);
+              if (val !== undefined) result[k] = val;
+            }
+          } else if (typeof keys === 'object') {
+            for (const [k, defVal] of Object.entries(keys)) {
+              const val = readKey(k);
+              result[k] = val !== undefined ? val : defVal;
+            }
+          }
+          if (typeof callback === 'function') callback(result);
+          return Promise.resolve(result);
+        },
+
+        set(items, callback) {
+          const changes = {};
+          for (const [k, newValue] of Object.entries(items || {})) {
+            const oldValue = readKey(k);
+            safeSetItem(prefix + k, JSON.stringify(newValue));
+            changes[k] = { oldValue, newValue };
+          }
+          notifyChanged(changes, areaName);
+          if (typeof callback === 'function') callback();
+          return Promise.resolve();
+        },
+
+        remove(keys, callback) {
+          const list = Array.isArray(keys) ? keys : [keys];
+          const changes = {};
+          for (const k of list) {
+            const oldValue = readKey(k);
+            safeRemoveItem(prefix + k);
+            if (oldValue !== undefined) {
+              changes[k] = { oldValue, newValue: undefined };
+            }
+          }
+          if (Object.keys(changes).length > 0) notifyChanged(changes, areaName);
+          if (typeof callback === 'function') callback();
+          return Promise.resolve();
+        },
+
+        clear(callback) {
+          for (const fullKey of Array.from(memFallback.keys())) {
+            if (fullKey.startsWith(prefix)) memFallback.delete(fullKey);
+          }
+          try {
+            const toDelete = [];
+            for (let i = 0; i < localStorage.length; i += 1) {
+              const fullKey = localStorage.key(i);
+              if (fullKey && fullKey.startsWith(prefix)) toDelete.push(fullKey);
+            }
+            toDelete.forEach((k) => localStorage.removeItem(k));
+          } catch {
+            // Ignore
+          }
+          if (typeof callback === 'function') callback();
+          return Promise.resolve();
+        }
+      };
+    }
+
+    function installPolyfill(engineModule) {
+      const storageListeners = new Set();
+      const messageListeners = new Set();
+
+      function notifyStorageChanged(changes, areaName) {
+        for (const fn of storageListeners) {
+          try {
+            fn(changes, areaName);
+          } catch (err) {
+            console.warn('[Demo Polyfill] storage.onChanged listener error:', err);
+          }
+        }
+      }
+
+      const syncArea = createStorageArea('sync', notifyStorageChanged);
+      const localArea = createStorageArea('local', notifyStorageChanged);
+
+      async function getSettingsFromStore() {
+        const defaults = globalThis.WT_CONFIG?.DEFAULT_SETTINGS || {
+          sourceLang: 'auto',
+          targetLang: 'zh-CN',
+          displayMode: 'replace',
+          engine: 'google-free',
+          selectionMode: 'icon',
+          showFloatingBall: true,
+          altHoverTranslate: true,
+          translationStyle: 'default',
+          excludedDomains: [],
+          loomConfig: {
+            baseUrl: 'http://127.0.0.1:4319/v1',
+            apiKey: '',
+            provider: 'zenmux',
+            model: 'zenmux/anthropic/claude-sonnet-5.5'
+          },
+          openaiConfig: {
+            apiUrl: 'https://api.openai.com/v1/chat/completions',
+            apiKey: '',
+            model: 'gpt-4o-mini'
+          }
+        };
+        const res = await syncArea.get('wt_settings');
+        const stored = res?.wt_settings || {};
+        return {
+          ...defaults,
+          ...stored,
+          loomConfig: {
+            ...(defaults.loomConfig || {}),
+            ...(stored.loomConfig || {})
+          },
+          openaiConfig: {
+            ...(defaults.openaiConfig || {}),
+            ...(stored.openaiConfig || {})
+          }
+        };
+      }
+
+      async function saveSettingsToStore(partial) {
+        const current = await getSettingsFromStore();
+        const merged = {
+          ...current,
+          ...(partial || {}),
+          loomConfig: {
+            ...(current.loomConfig || {}),
+            ...(partial?.loomConfig || {})
+          },
+          openaiConfig: {
+            ...(current.openaiConfig || {}),
+            ...(partial?.openaiConfig || {})
+          }
+        };
+        await syncArea.set({ wt_settings: merged });
+        return merged;
+      }
+
+      async function appendHistoryItem(item) {
+        const res = await localArea.get('wt_history');
+        const history = Array.isArray(res?.wt_history) ? res.wt_history : [];
+        const next = [item, ...history].slice(0, 50);
+        await localArea.set({ wt_history: next });
+        return next;
+      }
+
+      // Bridge translator-engine.js cleanly whether it uses object or positional signature
+      async function invokeTranslateText(payload, settings) {
+        const text = payload?.text ?? '';
+        const sourceLang = payload?.sourceLang || settings.sourceLang || 'auto';
+        const targetLang = payload?.targetLang || settings.targetLang || 'zh-CN';
+        const engine = payload?.engine || settings.engine || 'google-free';
+        const loomConfig = payload?.loomConfig || settings.loomConfig;
+        const openaiConfig = payload?.openaiConfig || settings.openaiConfig;
+
+        if (typeof engineModule.translateText !== 'function') {
+          throw new Error('translator-engine.js does not export translateText');
+        }
+        return engineModule.translateText({
+          text,
+          sourceLang,
+          targetLang,
+          engine,
+          loomConfig,
+          openaiConfig,
+          settings
+        });
+      }
+
+      async function invokeTranslateBatch(payload, settings) {
+        const texts = Array.isArray(payload?.texts) ? payload.texts : [];
+        const sourceLang = payload?.sourceLang || settings.sourceLang || 'auto';
+        const targetLang = payload?.targetLang || settings.targetLang || 'zh-CN';
+        const engine = payload?.engine || settings.engine || 'google-free';
+        const loomConfig = payload?.loomConfig || settings.loomConfig;
+        const openaiConfig = payload?.openaiConfig || settings.openaiConfig;
+
+        if (typeof engineModule.translateBatch === 'function') {
+          return engineModule.translateBatch({
+            texts,
+            sourceLang,
+            targetLang,
+            engine,
+            loomConfig,
+            openaiConfig,
+            settings
+          });
+        }
+
+        const results = await Promise.all(
+          texts.map((text) => invokeTranslateText({ text, sourceLang, targetLang, engine, loomConfig, openaiConfig }, settings))
+        );
+        return {
+          translations: results.map((r) => r.translatedText),
+          detectedSourceLangs: results.map((r) => r.detectedSourceLang || sourceLang),
+          engine: results[0]?.engine || engine
+        };
+      }
+
+      async function handleBackgroundMessage(message) {
+        const type = message?.type;
+        const payload = message?.payload || {};
+
+        try {
+          if (type === 'GET_SETTINGS') {
+            return { ok: true, data: await getSettingsFromStore() };
+          }
+          if (type === 'SAVE_SETTINGS') {
+            return { ok: true, data: await saveSettingsToStore(payload) };
+          }
+          if (type === 'GET_HISTORY') {
+            const res = await localArea.get('wt_history');
+            return { ok: true, data: Array.isArray(res?.wt_history) ? res.wt_history : [] };
+          }
+          if (type === 'CLEAR_HISTORY') {
+            await localArea.set({ wt_history: [] });
+            return { ok: true, data: [] };
+          }
+          if (type === 'FETCH_LOOM_MODELS') {
+            const settings = await getSettingsFromStore();
+            const baseUrl = payload.baseUrl || settings.loomConfig?.baseUrl || 'http://127.0.0.1:4319/v1';
+            const apiKey = payload.apiKey !== undefined ? payload.apiKey : (settings.loomConfig?.apiKey || '');
+            const presetProviders = globalThis.WT_CONFIG?.LOOM_PRESET_PROVIDERS || [];
+            if (typeof engineModule.fetchLoomModels === 'function') {
+              try {
+                const providers = await engineModule.fetchLoomModels({ baseUrl, apiKey });
+                return { ok: true, data: { providers, source: 'live' } };
+              } catch (err) {
+                return {
+                  ok: true,
+                  data: {
+                    providers: presetProviders,
+                    source: 'preset',
+                    warning: err?.message || 'Loom 网关不可达，已加载本地预设列表',
+                    code: err?.code || 'LOOM_UNAVAILABLE'
+                  }
+                };
+              }
+            }
+            return { ok: true, data: { providers: presetProviders, source: 'preset' } };
+          }
+          if (type === 'TRANSLATE_TEXT') {
+            const settings = await getSettingsFromStore();
+            const result = await invokeTranslateText(payload, settings);
+            if (payload.saveHistory && payload.text) {
+              await appendHistoryItem({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                text: payload.text,
+                translatedText: result.translatedText,
+                detectedSourceLang: result.detectedSourceLang || payload.sourceLang || 'auto',
+                sourceLang: payload.sourceLang || settings.sourceLang || 'auto',
+                targetLang: payload.targetLang || settings.targetLang || 'zh-CN',
+                engine: result.engine || payload.engine || settings.engine,
+                timestamp: Date.now()
+              });
+            }
+            return { ok: true, data: result };
+          }
+          if (type === 'TRANSLATE_BATCH') {
+            const settings = await getSettingsFromStore();
+            const result = await invokeTranslateBatch(payload, settings);
+            return { ok: true, data: result };
+          }
+          if (type === 'TEST_ENGINE') {
+            const settings = await getSettingsFromStore();
+            const start = performance.now();
+            const result = await invokeTranslateText(
+              {
+                text: 'Hello, world!',
+                sourceLang: 'en',
+                targetLang: settings.targetLang || 'zh-CN',
+                engine: payload.engine || settings.engine,
+                loomConfig: payload.loomConfig || settings.loomConfig,
+                openaiConfig: payload.openaiConfig || settings.openaiConfig
+              },
+              settings
+            );
+            return {
+              ok: true,
+              data: {
+                translatedText: result.translatedText,
+                latencyMs: Math.round(performance.now() - start)
+              }
+            };
+          }
+          if (type === 'AI_CHAT') {
+            const settings = await getSettingsFromStore();
+            const mergedLoom = {
+              ...(settings.loomConfig || {}),
+              ...(payload.loomConfig || {})
+            };
+            const mergedOpenAI = {
+              ...(settings.openaiConfig || {}),
+              ...(payload.openaiConfig || {})
+            };
+            if (payload.provider) mergedLoom.provider = payload.provider;
+            if (payload.model) mergedLoom.model = payload.model;
+
+            const activeEngine = payload.engine || settings.engine || 'google-free';
+            const activeTarget = payload.targetLang || settings.targetLang || 'zh-CN';
+
+            if (typeof engineModule.chatWithAI === 'function') {
+              const data = await engineModule.chatWithAI({
+                ...payload,
+                targetLang: activeTarget,
+                engine: activeEngine,
+                loomConfig: mergedLoom,
+                openaiConfig: mergedOpenAI
+              });
+              return { ok: true, data };
+            }
+
+            const samplePrompt = payload.selectionText || payload.prompt || payload.pageContext?.title || 'Gloss Demo';
+            const fallbackRes = await invokeTranslateText(
+              { text: String(samplePrompt).slice(0, 500), targetLang: activeTarget, engine: activeEngine },
+              settings
+            );
+            return {
+              ok: true,
+              data: {
+                reply: `[独立预览降级响应] ${fallbackRes.translatedText}`,
+                model: activeEngine,
+                engine: activeEngine,
+                fallback: true
+              }
+            };
+          }
+          return { ok: false, error: `Unknown message type: ${type}` };
+        } catch (error) {
+          return { ok: false, error: error?.message || String(error) };
+        }
+      }
+
+      const chromeObj = globalThis.chrome || {};
+      chromeObj.storage = {
+        sync: syncArea,
+        local: localArea,
+        onChanged: {
+          addListener(fn) {
+            storageListeners.add(fn);
+          },
+          removeListener(fn) {
+            storageListeners.delete(fn);
+          },
+          hasListener(fn) {
+            return storageListeners.has(fn);
+          }
+        }
+      };
+
+      chromeObj.runtime = {
+        ...(chromeObj.runtime || {}),
+        lastError: undefined,
+        getURL(path) {
+          return new URL('../' + String(path || '').replace(/^\/+/, ''), window.location.href).href;
+        },
+        sendMessage(message, callback) {
+          const promise = handleBackgroundMessage(message);
+          if (typeof callback === 'function') {
+            promise.then(callback);
+            return undefined;
+          }
+          return promise;
+        },
+        onMessage: {
+          addListener(fn) {
+            messageListeners.add(fn);
+          },
+          removeListener(fn) {
+            messageListeners.delete(fn);
+          },
+          hasListener(fn) {
+            return messageListeners.has(fn);
+          }
+        }
+      };
+
+      globalThis.chrome = chromeObj;
+
+      // Helper to dispatch content-script messages directly to onMessage listeners
+      return function dispatchToContent(message) {
+        return new Promise((resolve) => {
+          let settled = false;
+          const sendResponse = (resp) => {
+            if (!settled) {
+              settled = true;
+              resolve(resp);
+            }
+          };
+
+          for (const listener of messageListeners) {
+            try {
+              const maybeAsync = listener(message, { id: 'demo-polyfill' }, sendResponse);
+              if (maybeAsync === true) {
+                return;
+              }
+            } catch (err) {
+              console.warn('[Demo Polyfill] content listener error:', err);
+            }
+          }
+
+          if (!settled) resolve(undefined);
+        });
+      };
+    }
+
+    async function bootstrap() {
+      // Wait briefly past initial load so real MV3 content scripts (if installed) mount #wt-root-container first
+      if (document.readyState !== 'complete') {
+        await new Promise((r) => window.addEventListener('load', r, { once: true }));
+      }
+      await new Promise((r) => setTimeout(r, 80));
+
+      const hasExtensionRuntime = Boolean(globalThis.chrome?.runtime?.id);
+      const hasInjectedContainer = Boolean(document.getElementById('wt-root-container'));
+
+      if (hasExtensionRuntime || hasInjectedContainer) {
+        state.mode = 'extension';
+        setBadge('Extension Active · 扩展已注入', 'is-ready');
+        updateToolbarUI();
+
+        toggleBtn.addEventListener('click', () => {
+          alert('检测到真实扩展已加载！请点击浏览器工具栏上的 Gloss 图标、使用页面右下角悬浮球，或按 Alt+T 快捷键控制整页翻译。');
+        });
+        restoreBtn.addEventListener('click', () => {
+          alert('请在扩展弹窗或页面悬浮球中点击「恢复原文」。');
+        });
+        selectionBtn.addEventListener('click', () => {
+          alert('请直接用鼠标划选下方任意外文句子，扩展会自动弹出划词翻译卡片与 Sider AI 工具条（解释/总结/润色/追问）。');
+        });
+        sidebarBtn.addEventListener('click', () => {
+          alert('检测到真实扩展已加载！请按 Alt+S、点击扩展弹窗中的「💬 AI 侧边栏」，或点击右下角悬浮球打开 AI 侧边栏。');
+        });
+        summarizeBtn.addEventListener('click', () => {
+          alert('检测到真实扩展已加载！请在扩展弹窗、右键菜单或悬浮球中点击「📄 AI 总结本页」。');
+        });
+        return;
+      }
+
+      // Standalone browser mode: load translator-engine.js + polyfill + content scripts
+      try {
+        const engineModule = await import('../src/background/translator-engine.js');
+        const dispatchToContent = installPolyfill(engineModule);
+
+        await loadStylesheet('../src/content/content.css');
+        await loadClassicScript('../src/shared/config.js');
+        await loadClassicScript('../src/content/dom-translator.js');
+        await loadClassicScript('../src/content/selection-ui.js');
+        await loadClassicScript('../src/content/index.js');
+
+        state.mode = 'polyfill';
+        setBadge('Standalone Polyfill · 独立预览模式', 'is-ready');
+
+        const initSettingsResp = await globalThis.chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
+        if (initSettingsResp?.ok && initSettingsResp.data) {
+          state.targetLang = initSettingsResp.data.targetLang || 'zh-CN';
+          state.displayMode = initSettingsResp.data.displayMode || 'replace';
+        }
+        const statusResp = await dispatchToContent({ type: 'PAGE_GET_STATUS' });
+        updateToolbarUI(statusResp?.status);
+
+        // Toolbar handlers wired via Contract Messages
+        targetBtns.forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            state.targetLang = btn.dataset.target;
+            await globalThis.chrome.runtime.sendMessage({
+              type: 'SAVE_SETTINGS',
+              payload: { targetLang: state.targetLang }
+            });
+            const resp = state.isTranslated
+              ? await dispatchToContent({
+                  type: 'PAGE_SET_MODE',
+                  payload: { displayMode: state.displayMode, targetLang: state.targetLang }
+                })
+              : await dispatchToContent({ type: 'PAGE_GET_STATUS' });
+            updateToolbarUI(resp?.status);
+          });
+        });
+
+        modeBtns.forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            state.displayMode = btn.dataset.mode;
+            await globalThis.chrome.runtime.sendMessage({
+              type: 'SAVE_SETTINGS',
+              payload: { displayMode: state.displayMode }
+            });
+            const resp = state.isTranslated
+              ? await dispatchToContent({
+                  type: 'PAGE_SET_MODE',
+                  payload: { displayMode: state.displayMode, targetLang: state.targetLang }
+                })
+              : await dispatchToContent({ type: 'PAGE_GET_STATUS' });
+            updateToolbarUI(resp?.status);
+          });
+        });
+
+        toggleBtn.addEventListener('click', async () => {
+          const resp = await dispatchToContent({
+            type: 'PAGE_TRANSLATE_TOGGLE',
+            payload: {
+              sourceLang: 'auto',
+              targetLang: state.targetLang,
+              displayMode: state.displayMode
+            }
+          });
+          updateToolbarUI(resp?.status);
+        });
+
+        restoreBtn.addEventListener('click', async () => {
+          const resp = await dispatchToContent({ type: 'PAGE_TRANSLATE_RESTORE' });
+          updateToolbarUI(resp?.status);
+        });
+
+        selectionBtn.addEventListener('click', async () => {
+          const sampleText = document.getElementById('sample-phrase-en')?.textContent?.trim()
+            || 'Artificial intelligence accelerates scientific discovery.';
+          await dispatchToContent({
+            type: 'SHOW_SELECTION_TRANSLATION',
+            payload: { text: sampleText, targetLang: state.targetLang }
+          });
+        });
+
+        sidebarBtn.addEventListener('click', async () => {
+          await dispatchToContent({
+            type: 'SIDEBAR_TOGGLE',
+            payload: { tab: 'chat' }
+          });
+        });
+
+        summarizeBtn.addEventListener('click', async () => {
+          await dispatchToContent({
+            type: 'SIDEBAR_ACTION',
+            payload: { action: 'summarize_page', tab: 'summary', autoRun: true }
+          });
+        });
+
+        // Keep toolbar synchronized if floating ball or Alt+Hover changes status
+        setInterval(async () => {
+          const resp = await dispatchToContent({ type: 'PAGE_GET_STATUS' });
+          if (resp?.status) updateToolbarUI(resp.status);
+        }, 900);
+      } catch (err) {
+        console.error('[Demo Polyfill] Failed to initialize standalone mode:', err);
+        setBadge('需要本地 HTTP 服务 / Extension', 'is-warn');
+        fileWarning.classList.add('visible');
+        fileWarning.innerHTML = window.location.protocol === 'file:'
+          ? '<strong>提示：</strong>检测到您正在通过 <code>file://</code> 协议打开页面，浏览器会阻止 ES Module (<code>translator-engine.js</code>) 加载。请在项目根目录运行 <code>python3 -m http.server 8080</code> 或 <code>npx serve .</code> 后访问 <code>http://localhost:8080/demo/index.html</code>，或直接在 Chrome 中加载扩展。'
+          : `<strong>初始化失败：</strong>${String(err?.message || err)}。请确认各源码文件已就绪并通过本地 HTTP 服务访问。`;
+      }
+    }
+
+    bootstrap();
+  </script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gloss 网页翻译 - 设置</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="options-page">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="top-bar-inner">
+        <div class="brand">
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9.5" />
+              <path d="M2.8 12h18.4" />
+              <path d="M12 2.5a13.5 13.5 0 0 1 0 19 13.5 13.5 0 0 1 0-19Z" />
+            </svg>
+          </span>
+          <div>
+            <h1>Gloss · 设置中心</h1>
+            <p class="brand-desc">将任意语言网页智能翻译为 简体中文 / 繁體中文 / English</p>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button type="button" id="resetSettingsBtn" class="btn-outline">恢复默认设置</button>
+          <button type="button" id="saveAllBtn" class="btn-primary">保存设置</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="dashboard-layout">
+      <aside class="side-nav" aria-label="设置分类导航">
+        <a href="#sec-language" class="nav-link active">语言偏好</a>
+        <a href="#sec-page" class="nav-link">整页翻译</a>
+        <a href="#sec-selection" class="nav-link">划词翻译</a>
+        <a href="#sec-engine" class="nav-link">翻译引擎配置</a>
+        <a href="#sec-domains" class="nav-link">排除域名列表</a>
+      </aside>
+
+      <main class="sections-stack">
+        <!-- 1. 语言偏好 -->
+        <section id="sec-language" class="settings-card">
+          <div class="card-header">
+            <div>
+              <h2>语言偏好</h2>
+              <p>配置默认源语言识别策略与最常使用的目标译文语言。</p>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <label for="optSourceLang" class="field-label">默认源语言</label>
+            <select id="optSourceLang" class="input-control select-wide"></select>
+            <p class="field-help">推荐保持「自动检测 · 任意语言」，可自动识别英语、日语、韩语、法语、德语、西班牙语等网页内容。</p>
+          </div>
+
+          <div class="field-block">
+            <span class="field-label">默认目标语言（核心支持中/繁/英）</span>
+            <div id="optTargetLangGroup" class="target-cards" role="radiogroup" aria-label="默认目标语言">
+              <button type="button" class="choice-card active" data-target-lang="zh-CN" role="radio" aria-checked="true">
+                <div class="choice-title">简体中文</div>
+                <div class="choice-meta">zh-CN · 默认推荐</div>
+              </button>
+              <button type="button" class="choice-card" data-target-lang="zh-TW" role="radio" aria-checked="false">
+                <div class="choice-title">繁體中文</div>
+                <div class="choice-meta">zh-TW · 港澳台通用</div>
+              </button>
+              <button type="button" class="choice-card" data-target-lang="en" role="radio" aria-checked="false">
+                <div class="choice-title">English</div>
+                <div class="choice-meta">en · International</div>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. 整页翻译 -->
+        <section id="sec-page" class="settings-card">
+          <div class="card-header">
+            <div>
+              <h2>整页翻译</h2>
+              <p>自定义整页翻译排版模式、译文视觉样式与快捷交互。</p>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <span class="field-label">默认显示模式</span>
+            <div id="optDisplayModeGroup" class="option-grid-2" role="radiogroup" aria-label="默认显示模式">
+              <button type="button" class="choice-card active" data-display-mode="replace" role="radio" aria-checked="true">
+                <div class="choice-title">原地替换 (replace) · 默认</div>
+                <div class="choice-meta">类似 Chrome 内置翻译，直接替换原文节点并保持原排版</div>
+              </button>
+              <button type="button" class="choice-card" data-display-mode="bilingual" role="radio" aria-checked="false">
+                <div class="choice-title">双语对照 (bilingual)</div>
+                <div class="choice-meta">保留原文，在段落下方优雅插入译文</div>
+              </button>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <span class="field-label">双语译文样式</span>
+            <div id="optTranslationStyleGroup" class="option-grid-3" role="radiogroup" aria-label="译文显示样式">
+              <button type="button" class="style-card active" data-translation-style="default" role="radio" aria-checked="true">
+                <div class="style-preview preview-default">示例译文排版效果</div>
+                <div class="choice-title">默认样式</div>
+                <div class="choice-meta">柔和灰蓝次级文本</div>
+              </button>
+              <button type="button" class="style-card" data-translation-style="underline" role="radio" aria-checked="false">
+                <div class="style-preview preview-underline">示例译文排版效果</div>
+                <div class="choice-title">虚线下划线</div>
+                <div class="choice-meta">轻量虚线引导阅读</div>
+              </button>
+              <button type="button" class="style-card" data-translation-style="card" role="radio" aria-checked="false">
+                <div class="style-preview preview-card">示例译文排版效果</div>
+                <div class="choice-title">卡片高亮</div>
+                <div class="choice-meta">独立左侧边框卡片</div>
+              </button>
+            </div>
+          </div>
+
+          <div class="toggle-list">
+            <label class="toggle-row" for="optShowFloatingBall">
+              <div class="toggle-info">
+                <span class="toggle-title">显示网页悬浮球</span>
+                <span class="toggle-desc">在网页右侧显示轻量悬浮球，无需打开弹窗即可一键切换整页翻译与目标语言。</span>
+              </div>
+              <input type="checkbox" id="optShowFloatingBall" class="switch-input" />
+            </label>
+
+            <label class="toggle-row" for="optAltHoverTranslate">
+              <div class="toggle-info">
+                <span class="toggle-title">Alt + 悬停快捷翻译段落</span>
+                <span class="toggle-desc">按住 Alt 键并将鼠标悬停在任意外语段落上时，即时翻译或还原该段落。</span>
+              </div>
+              <input type="checkbox" id="optAltHoverTranslate" class="switch-input" />
+            </label>
+          </div>
+        </section>
+
+        <!-- 3. 划词翻译 -->
+        <section id="sec-selection" class="settings-card">
+          <div class="card-header">
+            <div>
+              <h2>划词翻译</h2>
+              <p>选择鼠标选中页面文字后的翻译触发方式。</p>
+            </div>
+          </div>
+
+          <div id="optSelectionModeGroup" class="option-grid-3" role="radiogroup" aria-label="划词触发方式">
+            <button type="button" class="choice-card active" data-selection-mode="icon" role="radio" aria-checked="true">
+              <div class="choice-title">显示悬浮图标</div>
+              <div class="choice-meta">选中文本后显示图标，点击再弹出翻译卡片（推荐）</div>
+            </button>
+            <button type="button" class="choice-card" data-selection-mode="instant" role="radio" aria-checked="false">
+              <div class="choice-title">划词立即翻译</div>
+              <div class="choice-meta">选中文本松开鼠标后直接弹出翻译结果</div>
+            </button>
+            <button type="button" class="choice-card" data-selection-mode="off" role="radio" aria-checked="false">
+              <div class="choice-title">关闭划词翻译</div>
+              <div class="choice-meta">仅通过右键菜单或扩展弹窗进行翻译</div>
+            </button>
+          </div>
+        </section>
+
+        <!-- 4. 翻译引擎配置 -->
+        <section id="sec-engine" class="settings-card">
+          <div class="card-header">
+            <div>
+              <h2>翻译引擎配置</h2>
+              <p>支持免配置免费翻译引擎，以及自定义 OpenAI 兼容大语言模型。</p>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <span class="field-label">选择翻译引擎</span>
+            <div id="optEngineGroup" class="option-grid-2" role="radiogroup" aria-label="翻译引擎">
+              <button type="button" class="choice-card active" data-engine="google-free" role="radio" aria-checked="true">
+                <div class="choice-title">Google Translate</div>
+                <div class="choice-meta">默认免费引擎 · 速度快、支持自动语言检测</div>
+              </button>
+              <button type="button" class="choice-card" data-engine="mymemory" role="radio" aria-checked="false">
+                <div class="choice-title">MyMemory API</div>
+                <div class="choice-meta">免费备用接口 · 自动故障回退兜底</div>
+              </button>
+              <button type="button" class="choice-card" data-engine="loom" role="radio" aria-checked="false">
+                <div class="choice-title">Loom 本地网关 (127.0.0.1:4319)</div>
+                <div class="choice-meta">本机统一模型路由 · 多供应商与模型切换</div>
+              </button>
+              <button type="button" class="choice-card" data-engine="openai" role="radio" aria-checked="false">
+                <div class="choice-title">OpenAI / 兼容 LLM</div>
+                <div class="choice-meta">自定义 API Key · 高质量语境翻译</div>
+              </button>
+              <button type="button" class="choice-card codex-choice-card" data-engine="codex" value="codex" role="radio" aria-checked="false">
+                <div class="choice-title">OpenAI Codex 订阅 (ChatGPT Plus/Pro · 同 pi / opencode2)</div>
+                <div class="choice-meta">支持导入本地 ~/.codex/auth.json / ~/.pi/agent/auth.json 或 OAuth 设备码登录，支持 GPT-5.6 / GPT-6 系列</div>
+              </button>
+            </div>
+          </div>
+
+          <div id="codexConfigCard" class="openai-panel codex-panel is-highlighted" hidden>
+            <div class="panel-title-row">
+              <h3>OpenAI Codex 订阅授权 (ChatGPT Plus / Pro)</h3>
+              <span id="codexAuthStatus" class="panel-badge">未授权</span>
+            </div>
+
+            <div class="form-grid equal-grid">
+              <div class="field-block">
+                <label for="codexModel" class="field-label">Codex 模型 (Model)</label>
+                <select id="codexModel" class="input-control"></select>
+              </div>
+
+              <div class="field-block">
+                <label for="codexReasoningEffort" class="field-label">思考强度 (Reasoning Effort)</label>
+                <select id="codexReasoningEffort" class="input-control">
+                  <option value="low">low（低 · 响应最快，推荐翻译）</option>
+                  <option value="medium">medium（中 · 均衡推理，适合总结）</option>
+                  <option value="high">high（高 · 深度推理）</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="codex-actions-bar">
+              <button type="button" id="codexTestBtn" class="btn-secondary">测试 Codex 连接</button>
+              <button type="button" id="codexClearAuthBtn" class="btn-outline btn-danger-outline">清除已保存凭证</button>
+            </div>
+
+            <div class="codex-method-box">
+              <div class="codex-method-title">方式一：导入本地 <code>~/.codex/auth.json</code> 或 <code>~/.pi/agent/auth.json</code></div>
+              <div class="codex-method-actions">
+                <button type="button" id="codexImportFileBtn" class="btn-secondary">选择本地 auth.json 文件</button>
+                <input type="file" id="codexAuthFileInput" accept=".json,application/json" hidden />
+                <span class="field-help">Mac 快捷复制命令：<code>pbcopy &lt; ~/.codex/auth.json</code>（导入后自动解析并清空文本框，绝不回显 Token 原文）</span>
+              </div>
+              <textarea
+                id="codexAuthJsonInput"
+                class="input-control codex-json-input"
+                rows="3"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="粘贴 ~/.codex/auth.json、~/.pi/agent/auth.json 或 JWT Token..."
+              ></textarea>
+              <div class="codex-method-actions">
+                <button type="button" id="codexParseJsonBtn" class="btn-outline">解析并导入文本凭证</button>
+              </div>
+            </div>
+
+            <div class="codex-method-box">
+              <div class="codex-method-title">方式二：OAuth 设备码登录 (Device Code · 无需本地文件)</div>
+              <div class="codex-method-actions">
+                <button type="button" id="codexDeviceLoginBtn" class="btn-secondary">OAuth 设备码登录 (Device Code)</button>
+                <button type="button" id="codexDeviceCancelBtn" class="btn-inline" hidden>取消等待</button>
+                <span class="field-help">使用 ChatGPT Plus / Pro 账号通过浏览器输入一次性授权码登录</span>
+              </div>
+
+              <div id="codexDeviceBox" class="codex-device-box" hidden>
+                <div class="codex-device-row">
+                  <span class="field-label">验证地址：</span>
+                  <a id="codexDeviceVerifyLink" href="https://auth.openai.com/codex/device" target="_blank" rel="noopener noreferrer" class="codex-device-link">https://auth.openai.com/codex/device</a>
+                </div>
+                <div class="codex-device-row">
+                  <span class="field-label">授权码：</span>
+                  <code id="codexDeviceCodeText" class="codex-device-code">---- ----</code>
+                  <button type="button" id="codexCopyCodeBtn" class="btn-inline">复制授权码</button>
+                </div>
+                <div id="codexDeviceStatusText" class="field-help">请在浏览器完成授权，系统正在自动轮询状态...</div>
+              </div>
+            </div>
+
+            <div id="codexImportNotice" class="loom-notice" hidden></div>
+          </div>
+
+          <div id="loomConfigPanel" class="openai-panel is-highlighted" hidden>
+            <div class="panel-title-row">
+              <h3>Loom 本地网关配置</h3>
+              <span id="loomSourceBadge" class="panel-badge is-active">预设供应商与模型</span>
+            </div>
+
+            <div class="form-grid">
+              <div class="field-block">
+                <label for="optLoomBaseUrl" class="field-label">网关地址 (Base URL)</label>
+                <input
+                  type="url"
+                  id="optLoomBaseUrl"
+                  class="input-control"
+                  placeholder="http://127.0.0.1:4319/v1"
+                />
+              </div>
+
+              <div class="field-block">
+                <label for="optLoomApiKey" class="field-label">入口 Key (hub.key)</label>
+                <div class="input-with-action">
+                  <input
+                    type="password"
+                    id="optLoomApiKey"
+                    class="input-control"
+                    autocomplete="off"
+                    placeholder="填写 hub.key 密钥"
+                  />
+                  <button type="button" id="toggleLoomKeyBtn" class="btn-inline">显示</button>
+                </div>
+                <p class="field-help">位于本机 <code>~/Library/Application Support/ModelHub/.local/hub.key</code></p>
+              </div>
+            </div>
+
+            <div class="loom-refresh-bar">
+              <button type="button" id="refreshLoomModelsBtn" class="btn-secondary">刷新供应商与模型</button>
+              <span class="field-help">优先请求 <code>/v1/models</code> 实时列表；如网关返回 403 或未启动，自动回退本地预设。</span>
+            </div>
+
+            <div id="loomModelsNotice" class="loom-notice" hidden></div>
+
+            <div class="form-grid equal-grid">
+              <div class="field-block">
+                <label for="optLoomProvider" class="field-label">选择供应商 (Provider)</label>
+                <select id="optLoomProvider" class="input-control"></select>
+              </div>
+
+              <div class="field-block">
+                <label for="optLoomModel" class="field-label">选择模型 (Model)</label>
+                <select id="optLoomModel" class="input-control"></select>
+              </div>
+            </div>
+          </div>
+
+          <div id="openaiConfigPanel" class="openai-panel">
+            <div class="panel-title-row">
+              <h3>OpenAI 兼容接口参数</h3>
+              <span id="openaiHintBadge" class="panel-badge">当前未启用，可提前配置</span>
+            </div>
+
+            <div class="form-grid">
+              <div class="field-block">
+                <label for="optApiUrl" class="field-label">API Endpoint URL</label>
+                <input
+                  type="url"
+                  id="optApiUrl"
+                  class="input-control"
+                  placeholder="https://api.openai.com/v1/chat/completions"
+                />
+              </div>
+
+              <div class="field-block">
+                <label for="optModel" class="field-label">Model 名称</label>
+                <input
+                  type="text"
+                  id="optModel"
+                  class="input-control"
+                  list="modelPresets"
+                  placeholder="gpt-4o-mini"
+                />
+                <datalist id="modelPresets">
+                  <option value="gpt-4o-mini"></option>
+                  <option value="gpt-4o"></option>
+                  <option value="gpt-4.1-mini"></option>
+                  <option value="deepseek-chat"></option>
+                  <option value="qwen-plus"></option>
+                </datalist>
+              </div>
+            </div>
+
+            <div class="field-block">
+              <label for="optApiKey" class="field-label">API Key</label>
+              <div class="input-with-action">
+                <input
+                  type="password"
+                  id="optApiKey"
+                  class="input-control"
+                  autocomplete="off"
+                  placeholder="sk-..."
+                />
+                <button type="button" id="toggleApiKeyBtn" class="btn-inline">显示</button>
+              </div>
+              <p class="field-help">密钥仅保存在您的浏览器扩展存储中，不会上传至第三方统计服务。</p>
+            </div>
+          </div>
+
+          <div class="test-bar">
+            <div class="test-controls">
+              <button type="button" id="testEngineBtn" class="btn-secondary">测试连接</button>
+              <span class="test-caption">将使用当前选中的引擎试译示例语句并测量响应耗时</span>
+            </div>
+            <div id="testResultBox" class="test-result" hidden>
+              <div class="test-result-head">
+                <span id="testStatusBadge" class="test-badge">成功</span>
+                <span id="testLatencyText" class="test-latency"></span>
+              </div>
+              <div id="testOutputText" class="test-output"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. 排除域名列表 -->
+        <section id="sec-domains" class="settings-card">
+          <div class="card-header">
+            <div>
+              <h2>排除域名列表</h2>
+              <p>添加到此列表的网站域名将跳过自动整页翻译与划词注入提示。</p>
+            </div>
+          </div>
+
+          <div class="domain-add-row">
+            <input
+              type="text"
+              id="domainInput"
+              class="input-control"
+              placeholder="输入域名或网址，例如 github.com 或 https://docs.example.org"
+              aria-label="新增排除域名"
+            />
+            <button type="button" id="addDomainBtn" class="btn-secondary">添加域名</button>
+          </div>
+          <div id="domainError" class="inline-error" hidden></div>
+
+          <div id="domainList" class="domain-list"></div>
+          <div id="domainEmpty" class="domain-empty">暂无排除域名，所有网页均已启用翻译功能。</div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Save Toast -->
+  <div id="saveToast" class="save-toast" role="status" aria-live="polite" hidden>
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+    <span id="saveToastText">已保存</span>
+  </div>
+
+  <script src="../shared/config.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
