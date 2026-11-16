@@ -1,59 +1,85 @@
-# Gloss（眉批）
+# Gloss (`眉批`)
 
-> 展卷对读，随文批注。
+English | [简体中文](./README.zh-CN.md)
 
-**Gloss（眉批）** 是一款轻量、本地优先的浏览器网页翻译与 AI 阅读助手扩展（Manifest V3，支持 Chrome / Edge / Firefox）。它把外文网页实时译为 **简体中文**、**繁體中文** 或 **English**，并在右侧提供随叫随到的 AI 侧边栏，用于总结长文、解读网页配图、多轮问答与写作润色。
+> Read side by side, annotate as you go.
 
-「Gloss」源自古籍与手稿中的行间注疏与页边眉批：左边在原网页排版上直接对读译文，右边展开侧边栏随时提问、摘录与批注。
+**Gloss** is a lightweight, local-first Manifest V3 browser extension for web translation and AI-assisted reading (supporting Chrome, Edge, and Firefox). It translates pages into **Simplified Chinese** (`zh-CN`), **Traditional Chinese** (`zh-TW`), or **English** (`en`), paired with an on-demand right-hand AI sidebar for summarizing long articles, analyzing webpage images, multi-turn Q&A, and writing polish.
 
-## 安装
+Named after traditional marginalia and interlinear glosses (*méipī*, `眉批`), Gloss keeps translated reading directly inside the original page layout on the left while letting you question, excerpt, and annotate in the sidebar on the right.
 
-1. 克隆或下载本仓库到本地：
+## Installation
+
+1. Clone or download this repository locally:
    ```sh
    git clone https://github.com/xdlkc/gloss.git
    ```
-2. 浏览器地址栏打开 `chrome://extensions`（Edge 打开 `edge://extensions`），开启右上角 **开发者模式**。
-3. 点击 **加载已解压的扩展程序**，选择 `gloss` 目录即可。无需配置任何 API Key 即可直接使用免费整页与划词翻译。
+2. Open `chrome://extensions` in Chrome (or `edge://extensions` in Edge) and enable **Developer mode**.
+3. Click **Load unpacked** and select the `gloss` directory. No API key is required to start using free full-page and selection translation.
 
-## 怎么用
+> Note: On Chromium browsers, Gloss also integrates with the native `sidePanel` API (`src/popup/popup.html?mode=sidepanel`) for restricted pages such as `chrome://`. In environments without `chrome.sidePanel` (such as Firefox or non-Chromium MV3 hosts), Gloss falls back to the in-page AI sidebar and popup workspace.
 
-| 操作 | 作用 |
+## Shortcuts & Interactions
+
+| Action | Behavior |
 | --- | --- |
-| `Alt + T` | 开启整页翻译 / 一键恢复原文 |
-| `Alt + S` | 打开 / 收起右侧 AI 侧边栏（在 `chrome://` 等受限页自动切换为浏览器原生侧边栏） |
-| `Alt + 鼠标悬停` | 指哪译哪，单段即时翻译或还原 |
-| `鼠标划选文字` | 弹出翻译卡片（简 / 繁 / 英切换、朗读、复制），或一键唤起 AI 解释、总结、润色、追问 |
-| `右键网页图片` | 选择「AI 解读此图片」，直接把图表或截图送入侧边栏识图分析 |
-| `点击工具栏图标 / 右下角悬浮球` | 随时切换「原地替换 / 双语对照」、目标语言或模型 |
+| `Alt + T` | Toggle full-page translation / restore original text |
+| `Alt + S` | Open / close the right-hand AI sidebar (switches to browser native Side Panel on restricted pages) |
+| `Alt + Hover` | Translate or restore a single paragraph under the cursor |
+| `Select text` | Open the selection translation card (`zh-CN` / `zh-TW` / `en` switch, TTS speak, copy) or trigger AI explain, summarize, polish, or follow-up |
+| `Right-click image` | Choose **AI 解读此图片** ("AI Analyze Image") to send charts or screenshots directly to the AI sidebar |
+| `Toolbar icon / Floating ball` | Switch between **In-place Replace** and **Bilingual Comparison**, change target language, or switch model backends |
 
-## 核心功能
+## Core Features
 
-- **不破排版的整页翻译**：默认采用「原地替换」模式，直接替换文本节点而不破坏 Flex/Grid 多列布局、表格与时间线；也可随时一键切换为「双语对照」保留原文并排阅读，且共享翻译缓存不重复请求。自动跳过 `<pre>`、`<code>`、数学公式与技术符号，首屏优先翻译并在滚动时自动预加载。
-- **实时流式思考的 AI 侧边栏**：默认关联当前网页正文并自动提取文中配图，也支持直接 `⌘V` / `Ctrl+V` 粘贴截图或拖拽上传图片。针对推理模型实时流式展开 `💭 正在思考...` 过程，不想等待时可取消勾选「🧠 深度思考」切回极速回答。
-- **跨网页历史会话检索**：自动按网页归档对话记录，点击侧边栏顶部「🕒 历史」即可按标题、域名或聊天内容模糊搜索并恢复过往任意页面的问答上下文。
-- **长文总结与写作回填**：内置一键生成网页摘要、提炼核心要点、生成关键问答；「写作润色」支持专业润色、精简缩写、扩写、语法纠错与中英互译，改完可一键回填到当前页面的输入框中。
+- **Layout-Preserving Page Translation**: Defaults to **In-place Replace** (`replace`), swapping text nodes directly without breaking Flex/Grid multi-column layouts, tables, or timelines. Switch anytime to **Bilingual Comparison** (`bilingual`) to display translations alongside original text while sharing the same translation cache. Automatically skips `<pre>`, `<code>`, math formulas, and `notranslate` elements, prioritizing the viewport and preloading on scroll.
+- **Streaming Thinking AI Sidebar**: Automatically attaches current page text and extracted page images; also supports pasting screenshots (`Cmd+V` / `Ctrl+V`), drag-and-drop, or file upload. Streams live reasoning traces (`💭 正在思考...`) for reasoning models, with a toggleable **Deep Thinking** switch for faster direct responses.
+- **Cross-Page History Search**: Archives chat sessions automatically by normalized page URL. Open the sidebar history panel to fuzzy-search past conversations by page title, domain, message text, or reasoning content and resume any prior page context.
+- **Long-Article Summaries & Writing Fill-back**: Built-in one-click page summary, key takeaways, and generated Q&A. The Writing workspace supports professional polish, shorten, expand, grammar correction, and EN/ZH translation, with one-click copy or fill-back into active editable inputs on the page.
 
-## 翻译引擎与模型接入
+## Translation & Model Backends
 
-在扩展设置页或弹窗顶部模型抽屉中可随时切换后端：
+Switch backends anytime from the popup model drawer or the extension Options page:
 
-| 引擎 | 适用场景 | 配置方式 |
+| Backend | Best For | Configuration |
 | --- | --- | --- |
-| **Google 免费翻译 / MyMemory** | 日常极速网页翻译（默认） | 零配置开箱即用，主接口异常时自动降级 |
-| **[Loom](https://github.com/xdlkc/loom) 本机网关** | 统一调用本机已配好的 Kimi、GLM、DeepSeek、ZenMux、MiniMax、LongCat 等模型 | 默认连接 `http://127.0.0.1:4319/v1`，填入本机 `hub.key` 即可实时同步模型目录；整页翻译自动使用低思考参数提速，侧边栏对话保留完整推理链与多模态识图 |
-| **ChatGPT / Codex 订阅** | 直接复用 ChatGPT Plus / Pro 订阅额度进行翻译与对话 | 支持粘贴导入本地 `~/.codex/auth.json`、`~/.pi/agent/auth.json`，或在设置页通过 OAuth 设备码登录；Token 临近过期自动静默续期 |
-| **OpenAI 兼容接口** | 接入任意第三方或自建大模型 API | 填入自定义 Base URL、API Key 与模型名称即可 |
+| **Google Translate (Free) / MyMemory** | Fast everyday browsing (default) | Zero-config out of the box; automatic fallback on failure |
+| **[Loom](https://github.com/xdlkc/loom) Local Gateway** | Routing through locally configured providers (ZenMux, GLM, MiniMax, DeepSeek, Kimi, LongCat) | Connects to `http://127.0.0.1:4319/v1` with local `hub.key` (`~/Library/Application Support/ModelHub/.local/hub.key`) to sync `/v1/models`; uses low reasoning effort for fast full-page translation while keeping full reasoning and vision in sidebar chat |
+| **ChatGPT / Codex Subscription** | Reusing ChatGPT Plus / Pro quota for translation and chat | Paste or import local `~/.codex/auth.json` or `~/.pi/agent/auth.json`, or sign in via OAuth Device Code; refreshes expiring tokens automatically |
+| **OpenAI-Compatible API** | Any third-party or self-hosted LLM API | Set custom endpoint URL, API key, and model name |
 
-## 开发与验证
+## Directory Layout
 
-本地预览多语言与侧边栏交互沙盒：
+```text
+gloss/
+├── manifest.json                         # Manifest V3 config, permissions, commands & side_panel
+├── icons/                                # Extension SVG & PNG icons (16/32/48/128)
+├── src/
+│   ├── shared/config.js                  # Shared settings, preset providers/models & chat session store
+│   ├── background/
+│   │   ├── service-worker.js             # MV3 service worker, context menus, commands & Side Panel
+│   │   └── translator-engine.js          # Google/MyMemory/Loom/Codex/OpenAI translation & AI streaming
+│   ├── content/
+│   │   ├── index.js                      # Content script lifecycle, shortcuts & message routing
+│   │   ├── dom-translator.js             # Layout-preserving DOM walker, cache & bilingual mode
+│   │   ├── selection-ui.js               # Floating ball, selection card, in-page AI sidebar & fill-back
+│   │   └── content.css                   # Injected content & sidebar styles
+│   ├── popup/                            # Extension popup & Side Panel 4-tab UI (Translate/Chat/Summary/Write)
+│   └── options/                          # Options dashboard (languages, display modes, backends, exclusions)
+├── demo/index.html                       # Local multilingual & sidebar test sandbox
+└── tests/verify-extension.mjs            # Zero-dependency automated verification suite
+```
+
+## Development & Verification
+
+Preview the local multilingual and sidebar interaction sandbox:
 
 ```sh
 python3 -m http.server 8080
-# 浏览器打开 http://localhost:8080/demo/index.html
+# Open http://localhost:8080/demo/index.html
 ```
 
-运行零依赖自动化测试套件（Node.js 18+）：
+Run the zero-dependency automated verification suite (Node.js 18+):
 
 ```sh
 node tests/verify-extension.mjs
